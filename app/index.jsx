@@ -23,7 +23,7 @@ const app = () => {
           <SafeAreaView className='flex flex-1'>
             <View style={{ height: '7%' }} className='mx-4 relative z-50'>
               <View className='flex-row justify-end items-center rounded-full'
-                style={{ backgroundColor: theme.bgWhite(0.2) }}>
+                style={{ backgroundColor: showSearch ? theme.bgWhite(0.2) : 'transparent' }}>
                 {
                   showSearch ? (
                     <TextInput
@@ -44,7 +44,7 @@ const app = () => {
           </SafeAreaView>
         </ImageBackground>
       </View>
-    </GestureHandlerRootView>
+    </GestureHandlerRootView >
   )
 }
 
