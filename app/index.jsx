@@ -1,25 +1,45 @@
 import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
 import { View, Text, ImageBackground, TouchableOpacity, Image } from 'react-native'
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import bgImage from "@/assets/images/bg.png"
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { TextInput } from 'react-native-gesture-handler'
 import { theme } from '@/theme'
+import { debounce } from 'lodash'
 
 import { CalendarDaysIcon, MagnifyingGlassIcon } from 'react-native-heroicons/outline'
 import { MapPinIcon } from 'react-native-heroicons/solid'
 import partlyCloudyImg from '../assets/images/partlycloudy.png'
+import { fetchLocations, fetchWeatherForcast } from '../api/weather'
 
 
 const app = () => {
   const [showSearch, toggleSearch] = useState(false)
-  const [locations, setLocations] = useState([1, 2, 3])
+  const [locations, setLocations] = useState('')
 
   const handleLocation = (loc) => {
-    console.log('location:', loc);
-  }
+    setLocations([]);
+    console.log(locations);
 
+    fetchWeatherForcast({
+      cityName: loc.name,
+      days: '7'
+    }).then(data => {
+      console.log('got forecast:', data);
+
+    })
+  }
+  const handleSearch = (value) => {
+    // fetch locations
+    if (value.length > 2) {
+      fetchLocations({ cityName: value }).then(data => {
+        setLocations(data)
+      })
+    }
+
+  }
+  const handleTextDebounce = useCallback(debounce(handleSearch, 1200), [])
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View className='flex-1 flex-col'>
@@ -36,6 +56,7 @@ const app = () => {
                 {
                   showSearch ? (
                     <TextInput
+                      onChangeText={handleTextDebounce}
                       placeholder='Search city'
                       placeholderTextColor={"darkgray"}
                       className='pl-6 h-14 flex-1 text-white pb-1 text-lg'
@@ -60,12 +81,12 @@ const app = () => {
                         let borderClass = showBorder ? 'border-b-gray-400 border-b-2' : ''
                         return (
                           <TouchableOpacity
-                            onPress={() => handleLocation(loc)}
+                            onPress={() => handleLocation(location)}
                             key={index}
                             className={`flex-row p-4 gap-3 pl-5 items-center ${borderClass} mb-1`}
                           >
                             <MapPinIcon size='20' color='gray'></MapPinIcon>
-                            <Text className='text-black text-base'>London, United Kindom</Text>
+                            <Text className='text-black text-base'>{location?.name}, {location?.country}</Text>
                           </TouchableOpacity>
                         )
                       })
