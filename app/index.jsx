@@ -10,23 +10,25 @@ import { debounce } from 'lodash'
 
 import { CalendarDaysIcon, MagnifyingGlassIcon } from 'react-native-heroicons/outline'
 import { MapPinIcon } from 'react-native-heroicons/solid'
-import partlyCloudyImg from '../assets/images/partlycloudy.png'
 import { fetchLocations, fetchWeatherForcast } from '../api/weather'
+import { weatherImages } from '@/constants';
 
 
 const app = () => {
   const [showSearch, toggleSearch] = useState(false)
   const [locations, setLocations] = useState('')
+  const [weather, setWeather] = useState({})
 
   const handleLocation = (loc) => {
     setLocations([]);
-    console.log(locations);
+    toggleSearch(false)
 
     fetchWeatherForcast({
       cityName: loc.name,
-      days: '7'
+      days: 7
     }).then(data => {
-      console.log('got forecast:', data);
+      setWeather(data)
+      // console.log('got forecast:', data);
 
     })
   }
@@ -40,6 +42,9 @@ const app = () => {
 
   }
   const handleTextDebounce = useCallback(debounce(handleSearch, 1200), [])
+
+  const { current, location } = weather
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View className='flex-1 flex-col'>
@@ -98,28 +103,28 @@ const app = () => {
 
             <View className='flex flex-col items-center gap-16 flex-1'>
               {/** Today weather */}
-              <Text className='font-bold text-white text-3xl mt-10'>London,
-                <Text className='text-gray-400 text-2xl'>UnitedKingdom</Text>
+              <Text className='font-bold text-white text-3xl mt-10'>{location?.name},
+                <Text className='text-gray-400 text-2xl'>{' ' + location?.country}</Text>
               </Text>
-              <Image source={partlyCloudyImg} className='w-52 h-48'></Image>
+              <Image source={weatherImages[current?.condition?.text]} className='w-52 h-48'></Image>
               <View className='flex flex-col gap-1 items-center justify-center'>
-                <Text className='text-6xl font-bold text-white'>23°</Text>
-                <Text className='text-xl font-bold text-gray-400'>Partly cloudy</Text>
+                <Text className='text-6xl font-bold text-white'>{current?.temp_c}°</Text>
+                <Text className='text-xl font-bold text-gray-400'>{current?.condition?.text}</Text>
               </View>
 
               {/** other stats */}
               <View className='flex-row mt-4 gap-10 '>
                 <View className='flex-row gap-2 items-center justify-center'>
                   <Image source={require('../assets/icons/wind.png')} className='w-7 h-7' />
-                  <Text className='text-white'>22km</Text>
+                  <Text className='text-white'>{current?.wind_kph}</Text>
                 </View>
                 <View className='flex-row gap-2 items-center justify-center'>
                   <Image source={require('../assets/icons/droplet.png')} className='w-7 h-7' />
-                  <Text className='text-white'>23%</Text>
+                  <Text className='text-white'>{current?.humidity}</Text>
                 </View>
                 <View className='flex-row gap-2 items-center justify-center'>
                   <Image source={require('../assets/icons/sun.png')} className='w-7 h-7' />
-                  <Text className='text-white'>6:05AM</Text>
+                  {/* <Text className='text-white'>{weather?.forecast?.forecastday?.astro?.sunrise}</Text> */}
                 </View>
               </View>
             </View>
@@ -135,42 +140,27 @@ const app = () => {
                 contentContainerStyle={{ paddingHorizontal: 5, flexGrow: 1 }}
               >
                 <View className='flex-row px-3 mt-4 gap-3'>
-                  <View className='flex-col w-28 justify-center items-center rounded-3xl py-4 space-y-3 gap-3'
-                    style={{ backgroundColor: theme.bgWhite(0.15) }}>
-                    <Image source={require('../assets/images/heavyrain.png')} className='w-11 h-11' />
-                    <Text className='text-gray-300'>Monday</Text>
-                    <Text className='text-white text-xl font-bold'>13°</Text>
-                  </View>
-                  <View className='flex-col w-28 justify-center items-center rounded-3xl py-4 space-y-3 gap-3'
-                    style={{ backgroundColor: theme.bgWhite(0.15) }}>
-                    <Image source={require('../assets/images/heavyrain.png')} className='w-11 h-11' />
-                    <Text className='text-gray-300'>Monday</Text>
-                    <Text className='text-white text-xl font-bold'>13°</Text>
-                  </View>
-                  <View className='flex-col w-28 justify-center items-center rounded-3xl py-4 space-y-3 gap-3'
-                    style={{ backgroundColor: theme.bgWhite(0.15) }}>
-                    <Image source={require('../assets/images/heavyrain.png')} className='w-11 h-11' />
-                    <Text className='text-gray-300'>Monday</Text>
-                    <Text className='text-white text-xl font-bold'>13°</Text>
-                  </View>
-                  <View className='flex-col w-28 justify-center items-center rounded-3xl py-4 space-y-3 gap-3'
-                    style={{ backgroundColor: theme.bgWhite(0.15) }}>
-                    <Image source={require('../assets/images/heavyrain.png')} className='w-11 h-11' />
-                    <Text className='text-gray-300'>Monday</Text>
-                    <Text className='text-white text-xl font-bold'>13°</Text>
-                  </View>
-                  <View className='flex-col w-28 justify-center items-center rounded-3xl py-4 space-y-3 gap-3'
-                    style={{ backgroundColor: theme.bgWhite(0.15) }}>
-                    <Image source={require('../assets/images/heavyrain.png')} className='w-11 h-11' />
-                    <Text className='text-gray-300'>Monday</Text>
-                    <Text className='text-white text-xl font-bold'>13°</Text>
-                  </View>
-                  <View className='flex-col w-28 justify-center items-center rounded-3xl py-4 space-y-3 gap-3'
-                    style={{ backgroundColor: theme.bgWhite(0.15) }}>
-                    <Image source={require('../assets/images/heavyrain.png')} className='w-11 h-11' />
-                    <Text className='text-gray-300'>Monday</Text>
-                    <Text className='text-white text-xl font-bold'>13°</Text>
-                  </View>
+
+                  {
+                    weather?.forecast?.forecastday?.map((item, index) => {
+                      console.log(weather?.forecast?.forecastday.length);
+
+                      let date = new Date(item.date);
+                      let options = { weekday: 'long' };
+                      let dayName = date.toLocaleDateString('en-US', options)
+
+                      return (
+                        <View key={index}
+                          className='flex-col w-28 justify-center items-center rounded-3xl py-4 space-y-3 gap-3'
+                          style={{ backgroundColor: theme.bgWhite(0.15) }}>
+                          <Image source={weatherImages[item?.day?.condition?.text]} className='w-11 h-11' />
+                          <Text className='text-gray-300'>{dayName}</Text>
+                          <Text className='text-white text-xl font-bold'>{item.day.avgtemp_c}°</Text>
+                        </View>
+                      )
+                    })
+                  }
+
                 </View>
               </ScrollView>
             </View>
