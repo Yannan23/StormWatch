@@ -1,6 +1,6 @@
 import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
 import { View, Text, ImageBackground, TouchableOpacity, Image } from 'react-native'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 
 import bgImage from "@/assets/images/bg.png"
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -39,11 +39,23 @@ const app = () => {
         setLocations(data)
       })
     }
-
   }
   const handleTextDebounce = useCallback(debounce(handleSearch, 1200), [])
 
   const { current, location } = weather
+
+  useEffect(() => {
+    fetchWeatherData()
+  }, [])
+
+  const fetchWeatherData = async () => {
+    fetchWeatherForcast({
+      cityName: 'Sydney',
+      days: 7
+    }).then(data => {
+      setWeather(data)
+    })
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -143,7 +155,6 @@ const app = () => {
 
                   {
                     weather?.forecast?.forecastday?.map((item, index) => {
-                      console.log(weather?.forecast?.forecastday.length);
 
                       let date = new Date(item.date);
                       let options = { weekday: 'long' };
